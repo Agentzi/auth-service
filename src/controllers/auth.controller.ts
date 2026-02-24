@@ -5,6 +5,7 @@ import { usersTable } from "../db/user";
 import hash from "../utils/hash";
 import jwt from "../utils/jwt";
 import { cookieOptions } from "../utils/cookie-options";
+import { eq } from "drizzle-orm";
 
 const AuthController = {
   /**
@@ -41,7 +42,6 @@ const AuthController = {
 
       return res.status(HttpStatus.CREATED).json({
         message: "Registered Successfully",
-        user_id: user.id,
       });
     } catch (error: any) {
       if (error.code === 23505) {
@@ -50,6 +50,58 @@ const AuthController = {
           .json({ message: "User already exists" });
       }
 
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Internal Server Error" });
+    }
+  },
+
+  /**
+   * @method POST
+   * @access /auth/login
+   * @description This method is used for user login
+   */
+  login: async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid request" });
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.email, email))
+        .limit(1);
+
+      if (!user) {
+        return res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json({ message: "Invalid email or password" });
+      }
+
+      const isPasswordValid = await hash.comparePassword(
+        password,
+        user.password,
+      );
+
+      if (!isPasswordValid) {
+        return res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json({ message: "Invalid email or password" });
+      }
+
+      const token = await jwt.generateToken(user.id);
+
+      res.cookie("token", token, cookieOptions);
+
+      return res.status(HttpStatus.OK).json({
+        message: "Login successful",
+      });
+    } catch (error) {
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "Internal Server Error" });
