@@ -5,6 +5,8 @@ import db from "./config/db.config";
 import cookieParser from "cookie-parser";
 
 import AuthRoutes from "./routes/auth.routes";
+import UserRoutes from "./routes/user.routes";
+import HttpStatus from "./utils/http-status";
 
 const PORT: number = parseInt(process.env.PORT);
 
@@ -19,7 +21,14 @@ app.use(
 );
 app.use(cookieParser());
 
+app.get("/", (_, res) => {
+  res.status(HttpStatus.OK).json({
+    message: "🟢 Server is running...",
+  });
+});
+
 app.use("/api/v1/auth", AuthRoutes);
+app.use("/api/v1/user", UserRoutes);
 
 server.listen(PORT, () => {
   console.log("🟢 Server is running...");
