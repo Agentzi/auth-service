@@ -1,5 +1,4 @@
-import { Response } from "express";
-import { AuthRequest } from "../middlewares/auth.middleware";
+import { Request, Response } from "express";
 import HttpStatus from "../utils/http-status";
 import db from "../config/db.config";
 import { usersTable } from "../db/user";
@@ -11,14 +10,14 @@ const UserController = {
    * @access /user/
    * @description This method is used to get user's details
    */
-  getUser: async (req: AuthRequest, res: Response) => {
-    if (!req.user?.id) {
+  getUser: async (req: Request, res: Response) => {
+    const id = req.headers["x-user-id"] as string;
+
+    if (!id) {
       return res
         .status(HttpStatus.UNAUTHORIZED)
         .json({ message: "Invalid or expired token" });
     }
-
-    const { id } = req.user;
 
     try {
       const [user] = await db
@@ -53,14 +52,14 @@ const UserController = {
    * @access /user/
    * @description This method is used to update the user's details
    */
-  updateUser: async (req: AuthRequest, res: Response) => {
-    if (!req.user?.id) {
+  updateUser: async (req: Request, res: Response) => {
+    const id = req.headers["x-user-id"] as string;
+
+    if (!id) {
       return res
         .status(HttpStatus.UNAUTHORIZED)
         .json({ message: "Invalid or expired token" });
     }
-
-    const { id } = req.user;
     const { first_name, last_name, username } = req.body;
 
     if (!first_name && !last_name && !username) {
