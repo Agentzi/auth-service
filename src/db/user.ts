@@ -9,6 +9,8 @@ export const usersTable = pgTable("users", {
   password: varchar("password").notNull(),
   username: varchar("username").notNull().unique(),
   bio: varchar("bio"),
+  profile_url: varchar("profile_url"),
+  banner_url: varchar("banner_url"),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

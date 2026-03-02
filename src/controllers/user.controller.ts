@@ -3,6 +3,7 @@ import HttpStatus from "../utils/http-status";
 import db from "../config/db.config";
 import { usersTable } from "../db/user";
 import { eq, ilike, or } from "drizzle-orm";
+import { uploadImage, deleteImage, extractPublicId } from "../utils/cloudinary";
 
 const UserController = {
   /**
@@ -28,6 +29,8 @@ const UserController = {
           last_name: usersTable.last_name,
           username: usersTable.username,
           bio: usersTable.bio,
+          profile_url: usersTable.profile_url,
+          banner_url: usersTable.banner_url,
           created_at: usersTable.created_at,
         })
         .from(usersTable)
@@ -87,6 +90,8 @@ const UserController = {
           last_name: usersTable.last_name,
           username: usersTable.username,
           bio: usersTable.bio,
+          profile_url: usersTable.profile_url,
+          banner_url: usersTable.banner_url,
           created_at: usersTable.created_at,
           updated_at: usersTable.updated_at,
         });
@@ -133,6 +138,8 @@ const UserController = {
           username: usersTable.username,
           bio: usersTable.bio,
           created_at: usersTable.created_at,
+          profile_url: usersTable.profile_url,
+          banner_url: usersTable.banner_url,
         })
         .from(usersTable)
         .where(
@@ -175,6 +182,8 @@ const UserController = {
           username: usersTable.username,
           bio: usersTable.bio,
           created_at: usersTable.created_at,
+          profile_url: usersTable.profile_url,
+          banner_url: usersTable.banner_url,
         })
         .from(usersTable)
         .where(eq(usersTable.username, username as string))
@@ -233,6 +242,130 @@ const UserController = {
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "Internal Server Error" });
+    }
+  },
+
+  /**
+   * @method POST
+   * @access /user/upload/profile
+   * @description Uploads a profile image to Cloudinary and updates the user record
+   */
+  uploadProfileImage: async (req: Request, res: Response) => {
+    const id = req.headers["x-user-id"] as string;
+
+    if (!id) {
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: "Unauthorized" });
+    }
+
+    if (!req.file) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "No image file provided" });
+    }
+
+    try {
+      const [currentUser] = await db
+        .select({ profile_url: usersTable.profile_url })
+        .from(usersTable)
+        .where(eq(usersTable.id, id))
+        .limit(1);
+
+      if (!currentUser) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: "User not found" });
+      }
+
+      const folder = `agentzi_users/${id}`;
+      const publicId = `profile_${Date.now()}`;
+      const uploadResult = await uploadImage(req.file.buffer, folder, publicId);
+
+      const [updatedUser] = await db
+        .update(usersTable)
+        .set({ profile_url: uploadResult.secure_url })
+        .where(eq(usersTable.id, id))
+        .returning({
+          id: usersTable.id,
+          profile_url: usersTable.profile_url,
+        });
+
+      if (currentUser.profile_url) {
+        const oldPublicId = extractPublicId(currentUser.profile_url);
+        if (oldPublicId) {
+          await deleteImage(oldPublicId);
+        }
+      }
+
+      return res.status(HttpStatus.OK).json(updatedUser);
+    } catch (error) {
+      console.error("Profile upload error:", error);
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Failed to upload image" });
+    }
+  },
+
+  /**
+   * @method POST
+   * @access /user/upload/banner
+   * @description Uploads a banner image to Cloudinary and updates the user record
+   */
+  uploadBannerImage: async (req: Request, res: Response) => {
+    const id = req.headers["x-user-id"] as string;
+
+    if (!id) {
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: "Unauthorized" });
+    }
+
+    if (!req.file) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "No image file provided" });
+    }
+
+    try {
+      const [currentUser] = await db
+        .select({ banner_url: usersTable.banner_url })
+        .from(usersTable)
+        .where(eq(usersTable.id, id))
+        .limit(1);
+
+      if (!currentUser) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: "User not found" });
+      }
+
+      const folder = `agentzi_users/${id}`;
+      const publicId = `banner_${Date.now()}`;
+      const uploadResult = await uploadImage(req.file.buffer, folder, publicId);
+
+      const [updatedUser] = await db
+        .update(usersTable)
+        .set({ banner_url: uploadResult.secure_url })
+        .where(eq(usersTable.id, id))
+        .returning({
+          id: usersTable.id,
+          banner_url: usersTable.banner_url,
+        });
+
+      if (currentUser.banner_url) {
+        const oldPublicId = extractPublicId(currentUser.banner_url);
+        if (oldPublicId) {
+          await deleteImage(oldPublicId);
+        }
+      }
+
+      return res.status(HttpStatus.OK).json(updatedUser);
+    } catch (error) {
+      console.error("Banner upload error:", error);
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Failed to upload image" });
     }
   },
 };
