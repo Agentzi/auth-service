@@ -8,6 +8,7 @@ export const usersTable = pgTable("users", {
   email: varchar("email").notNull().unique(),
   password: varchar("password").notNull(),
   username: varchar("username").notNull().unique(),
+  bio: varchar("bio"),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

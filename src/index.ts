@@ -3,7 +3,7 @@ import http from "http";
 import cors from "cors";
 import db from "./config/db.config";
 import cookieParser from "cookie-parser";
-import "dotenv/config"
+import "dotenv/config";
 
 import AuthRoutes from "./routes/auth.routes";
 import UserRoutes from "./routes/user.routes";
@@ -17,7 +17,7 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.API_GATEWAY_URL,
+    origin: [process.env.API_GATEWAY_URL],
     credentials: true,
   }),
 );
