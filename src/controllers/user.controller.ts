@@ -31,6 +31,10 @@ const UserController = {
           bio: usersTable.bio,
           profile_url: usersTable.profile_url,
           banner_url: usersTable.banner_url,
+          github_url: usersTable.github_url,
+          linkedin_url: usersTable.linkedin_url,
+          x_url: usersTable.x_url,
+          website_url: usersTable.website_url,
           created_at: usersTable.created_at,
         })
         .from(usersTable)
@@ -64,9 +68,27 @@ const UserController = {
         .status(HttpStatus.UNAUTHORIZED)
         .json({ message: "Invalid or expired token" });
     }
-    const { first_name, last_name, username, bio } = req.body;
+    const {
+      first_name,
+      last_name,
+      username,
+      bio,
+      github_url,
+      linkedin_url,
+      x_url,
+      website_url,
+    } = req.body;
 
-    if (!first_name && !last_name && !username && bio === undefined) {
+    if (
+      !first_name &&
+      !last_name &&
+      !username &&
+      bio === undefined &&
+      github_url === undefined &&
+      linkedin_url === undefined &&
+      x_url === undefined &&
+      website_url === undefined
+    ) {
       return res
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: "No data provided for update" });
@@ -78,6 +100,10 @@ const UserController = {
       if (last_name) updateData.last_name = last_name;
       if (username) updateData.username = username;
       if (bio !== undefined) updateData.bio = bio;
+      if (github_url !== undefined) updateData.github_url = github_url;
+      if (linkedin_url !== undefined) updateData.linkedin_url = linkedin_url;
+      if (x_url !== undefined) updateData.x_url = x_url;
+      if (website_url !== undefined) updateData.website_url = website_url;
 
       const [updatedUser] = await db
         .update(usersTable)
@@ -92,6 +118,10 @@ const UserController = {
           bio: usersTable.bio,
           profile_url: usersTable.profile_url,
           banner_url: usersTable.banner_url,
+          github_url: usersTable.github_url,
+          linkedin_url: usersTable.linkedin_url,
+          x_url: usersTable.x_url,
+          website_url: usersTable.website_url,
           created_at: usersTable.created_at,
           updated_at: usersTable.updated_at,
         });
@@ -140,6 +170,10 @@ const UserController = {
           created_at: usersTable.created_at,
           profile_url: usersTable.profile_url,
           banner_url: usersTable.banner_url,
+          github_url: usersTable.github_url,
+          linkedin_url: usersTable.linkedin_url,
+          x_url: usersTable.x_url,
+          website_url: usersTable.website_url,
         })
         .from(usersTable)
         .where(
@@ -184,6 +218,10 @@ const UserController = {
           created_at: usersTable.created_at,
           profile_url: usersTable.profile_url,
           banner_url: usersTable.banner_url,
+          github_url: usersTable.github_url,
+          linkedin_url: usersTable.linkedin_url,
+          x_url: usersTable.x_url,
+          website_url: usersTable.website_url,
         })
         .from(usersTable)
         .where(eq(usersTable.username, username as string))
@@ -226,6 +264,12 @@ const UserController = {
           username: usersTable.username,
           bio: usersTable.bio,
           created_at: usersTable.created_at,
+          profile_url: usersTable.profile_url,
+          banner_url: usersTable.banner_url,
+          github_url: usersTable.github_url,
+          linkedin_url: usersTable.linkedin_url,
+          x_url: usersTable.x_url,
+          website_url: usersTable.website_url,
         })
         .from(usersTable)
         .where(eq(usersTable.id, id as string))

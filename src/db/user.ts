@@ -11,6 +11,10 @@ export const usersTable = pgTable("users", {
   bio: varchar("bio"),
   profile_url: varchar("profile_url"),
   banner_url: varchar("banner_url"),
+  github_url: varchar("github_url"),
+  linkedin_url: varchar("linkedin_url"),
+  x_url: varchar("x_url"),
+  website_url: varchar("website_url"),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
