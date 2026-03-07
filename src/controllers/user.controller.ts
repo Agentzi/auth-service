@@ -199,6 +199,43 @@ const UserController = {
 
   /**
    * @method GET
+   * @access /user/check-username/:username
+   * @description Check if a given username is available for a new user
+   */
+  checkUsernameAvailability: async (req: Request, res: Response) => {
+    const rawUsername = req.params.username;
+    if (!rawUsername || typeof rawUsername !== "string") {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Username is required" });
+    }
+
+    const username = rawUsername.trim();
+
+    if (username === "") {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Username is required" });
+    }
+
+    try {
+      const [existingUser] = await db
+        .select({ id: usersTable.id })
+        .from(usersTable)
+        .where(ilike(usersTable.username, username))
+        .limit(1);
+
+      return res.status(HttpStatus.OK).json({ available: !existingUser });
+    } catch (error) {
+      console.error("Error checking username:", error);
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Internal Server Error" });
+    }
+  },
+
+  /**
+   * @method GET
    * @access /user/username/:username
    * @description Get a user's public profile by username
    */

@@ -9,6 +9,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get("/", UserController.getUser);
 router.put("/", UserController.updateUser);
 router.get("/search", UserController.searchUsers);
+router.get("/check-username/:username", UserController.checkUsernameAvailability);
 router.get("/username/:username", UserController.getUserByUsername);
 router.get("/id/:id", UserController.getUserById);
 
