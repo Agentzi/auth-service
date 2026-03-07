@@ -20,6 +20,8 @@ const UserController = {
         .json({ message: "Invalid or expired token" });
     }
 
+    console.log(id);
+
     try {
       const [user] = await db
         .select({
@@ -40,6 +42,8 @@ const UserController = {
         .from(usersTable)
         .where(eq(usersTable.id, id as string))
         .limit(1);
+
+      console.log(user);
 
       if (!user) {
         return res

@@ -107,6 +107,16 @@ const AuthController = {
         .json({ message: "Internal Server Error" });
     }
   },
+
+  /**
+   * @method POST
+   * @access /auth/logout
+   * @description This method is used for user logout
+   */
+  logout: async (req: Request, res: Response) => {
+    res.clearCookie("token", cookieOptions);
+    return res.status(HttpStatus.OK).json({ message: "Logout successful" });
+  },
 };
 
 export default AuthController;
